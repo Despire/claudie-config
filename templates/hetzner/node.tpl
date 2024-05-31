@@ -1,18 +1,15 @@
 {{- $clusterName := .ClusterData.ClusterName }}
 {{- $clusterHash := .ClusterData.ClusterHash }}
+{{- $specName := $.NodePool.NodePool.Provider.SpecName }}
 
-{{- range $nodepool := .NodePools }}
-
-{{- $specName := $nodepool.NodePool.Provider.SpecName }}
-
-{{- range $node := $nodepool.Nodes }}
+{{- range $node := $.NodePool.Nodes }}
 resource "hcloud_server" "{{ $node.Name }}_{{ $specName }}" {
   provider      = hcloud.nodepool_{{ $specName }}
   name          = "{{ $node.Name }}"
-  server_type   = "{{ $nodepool.NodePool.ServerType }}"
-  image         = "{{ $nodepool.NodePool.Image }}"
+  server_type   = "{{ $.NodePool.NodePool.ServerType }}"
+  image         = "{{ $.NodePool.NodePool.Image }}"
   firewall_ids  = [hcloud_firewall.firewall_{{ $specName }}.id]
-  datacenter    = "{{ $nodepool.NodePool.Zone }}"
+  datacenter    = "{{ $.NodePool.NodePool.Zone }}"
   public_net {
      ipv6_enabled = false
   }
@@ -29,7 +26,7 @@ resource "hcloud_server" "{{ $node.Name }}_{{ $specName }}" {
 #!/bin/bash
 # Create longhorn volume directory
 mkdir -p /opt/claudie/data
-    {{- if and (not $nodepool.IsControl) (gt $nodepool.NodePool.StorageDiskSize 0) }}
+    {{- if and (not $.NodePool.IsControl) (gt $.NodePool.NodePool.StorageDiskSize 0) }}
 # Mount volume only when not mounted yet
 sleep 50
 disk=$(ls -l /dev/disk/by-id | grep "${hcloud_volume.{{ $node.Name }}_{{ $specName }}_volume.id}" | awk '{print $NF}')
@@ -48,13 +45,13 @@ EOF
 }
 
 {{- if eq $.ClusterData.ClusterType "K8s" }}
-    {{- if and (not $nodepool.IsControl) (gt $nodepool.NodePool.StorageDiskSize 0) }}
+    {{- if and (not $.NodePool.IsControl) (gt $.NodePool.NodePool.StorageDiskSize 0) }}
 resource "hcloud_volume" "{{ $node.Name }}_{{ $specName }}_volume" {
   provider  = hcloud.nodepool_{{ $specName }}
   name      = "{{ $node.Name }}d"
-  size      = {{ $nodepool.NodePool.StorageDiskSize }}
+  size      = {{ $.NodePool.NodePool.StorageDiskSize }}
   format    = "xfs"
-  location = "{{ $nodepool.NodePool.Region }}"
+  location = "{{ $.NodePool.NodePool.Region }}"
 }
 
 resource "hcloud_volume_attachment" "{{ $node.Name }}_{{ $specName }}_volume_att" {
@@ -66,11 +63,10 @@ resource "hcloud_volume_attachment" "{{ $node.Name }}_{{ $specName }}_volume_att
     {{- end }}
 {{- end }}
 
-{{- end }}
-
-output "{{ $nodepool.Name }}" {
+output "{{ $.NodePool.Name }}" {
   value = {
-    {{- range $node := $nodepool.Nodes }}
+    {{- range $node := $.NodePool.Nodes }}
+    de
     "${hcloud_server.{{ $node.Name }}_{{ $specName }}.name}" = hcloud_server.{{ $node.Name }}_{{ $specName }}.ipv4_address
     {{- end }}
   }
