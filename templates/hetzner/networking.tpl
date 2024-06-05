@@ -4,7 +4,7 @@
 {{- $specName := $.Provider.SpecName }}
 
 resource "hcloud_ssh_key" "claudie_{{ $specName }}" {
-  provider   = hcloud.nodepool_{{ $specName }}
+  provider   = hcloud.nodepool_{{ $specName }}_${var.provider_version}
   name       = "key-{{ $clusterHash }}-{{ $specName }}"
   public_key = file("./public.pem")
 
@@ -15,7 +15,7 @@ resource "hcloud_ssh_key" "claudie_{{ $specName }}" {
 }
 
 resource "hcloud_firewall" "firewall_{{ $specName }}" {
-  provider = hcloud.nodepool_{{ $specName }}
+  provider = hcloud.nodepool_{{ $specName }}_${var.provider_version}
   name     = "fwl-{{ $clusterHash }}-{{ $specName }}"
   rule {
     direction  = "in"
