@@ -6,6 +6,7 @@
 {{- $specName := $nodepool.NodePool.Provider.SpecName }}
 
 {{- range $node := $nodepool.Nodes }}
+
 resource "hcloud_server" "{{ $node.Name }}_{{ $specName }}" {
   provider      = hcloud.nodepool_{{ $specName }}_{{ $.Fingerprint }}
   name          = "{{ $node.Name }}"
