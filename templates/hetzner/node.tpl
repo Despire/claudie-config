@@ -1,13 +1,13 @@
-{{- $clusterName := .ClusterData.ClusterName }}
-{{- $clusterHash := .ClusterData.ClusterHash }}
+{{- $clusterName := .Data.ClusterData.ClusterName }}
+{{- $clusterHash := .Data.ClusterData.ClusterHash }}
 
-{{- range $nodepool := .NodePools }}
+{{- range $nodepool := .Data.NodePools }}
 
 {{- $specName := $nodepool.NodePool.Provider.SpecName }}
 
 {{- range $node := $nodepool.Nodes }}
 resource "hcloud_server" "{{ $node.Name }}_{{ $specName }}" {
-  provider      = hcloud.nodepool_{{ $specName }}_v013
+  provider      = hcloud.nodepool_{{ $specName }}_{{ $.Fingerprint }}
   name          = "{{ $node.Name }}"
   server_type   = "{{ $nodepool.NodePool.ServerType }}"
   image         = "{{ $nodepool.NodePool.Image }}"
@@ -24,7 +24,7 @@ resource "hcloud_server" "{{ $node.Name }}_{{ $specName }}" {
     "claudie-cluster" : "{{ $clusterName }}-{{ $clusterHash }}"
   }
 
-{{- if eq $.ClusterData.ClusterType "K8s" }}
+{{- if eq $.Data.ClusterData.ClusterType "K8s" }}
   user_data = <<EOF
 #!/bin/bash
 # Create longhorn volume directory
@@ -47,10 +47,10 @@ EOF
 {{- end }}
 }
 
-{{- if eq $.ClusterData.ClusterType "K8s" }}
+{{- if eq $.Data.ClusterData.ClusterType "K8s" }}
     {{- if and (not $nodepool.IsControl) (gt $nodepool.NodePool.StorageDiskSize 0) }}
 resource "hcloud_volume" "{{ $node.Name }}_{{ $specName }}_volume" {
-  provider  = hcloud.nodepool_{{ $specName }}_v013
+  provider  = hcloud.nodepool_{{ $specName }}_{{ $.Fingerprint }}
   name      = "{{ $node.Name }}d"
   size      = {{ $nodepool.NodePool.StorageDiskSize }}
   format    = "xfs"
@@ -58,7 +58,7 @@ resource "hcloud_volume" "{{ $node.Name }}_{{ $specName }}_volume" {
 }
 
 resource "hcloud_volume_attachment" "{{ $node.Name }}_{{ $specName }}_volume_att" {
-  provider  = hcloud.nodepool_{{ $specName }}_v013
+  provider  = hcloud.nodepool_{{ $specName }}_{{ $.Fingerprint }}
   volume_id = hcloud_volume.{{ $node.Name }}_{{ $specName }}_volume.id
   server_id = hcloud_server.{{ $node.Name }}_{{ $specName }}.id
   automount = false
@@ -68,7 +68,7 @@ resource "hcloud_volume_attachment" "{{ $node.Name }}_{{ $specName }}_volume_att
 
 {{- end }}
 
-output "{{ $nodepool.Name }}" {
+output "{{ $nodepool.Name }}_{{ $.Fingerprint }}" {
   value = {
     {{- range $node := $nodepool.Nodes }}
     "${hcloud_server.{{ $node.Name }}_{{ $specName }}.name}" = hcloud_server.{{ $node.Name }}_{{ $specName }}.ipv4_address
