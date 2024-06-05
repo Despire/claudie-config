@@ -7,7 +7,7 @@
 
 {{- range $node := $nodepool.Nodes }}
 resource "hcloud_server" "{{ $node.Name }}_{{ $specName }}" {
-  provider      = hcloud.nodepool_{{ $specName }}_${var.provider_version}
+  provider      = hcloud.nodepool_{{ $specName }}_v0.1.2
   name          = "{{ $node.Name }}"
   server_type   = "{{ $nodepool.NodePool.ServerType }}"
   image         = "{{ $nodepool.NodePool.Image }}"
@@ -50,7 +50,7 @@ EOF
 {{- if eq $.ClusterData.ClusterType "K8s" }}
     {{- if and (not $nodepool.IsControl) (gt $nodepool.NodePool.StorageDiskSize 0) }}
 resource "hcloud_volume" "{{ $node.Name }}_{{ $specName }}_volume" {
-  provider  = hcloud.nodepool_{{ $specName }}_${var.provider_version}
+  provider  = hcloud.nodepool_{{ $specName }}_v0.1.2
   name      = "{{ $node.Name }}d"
   size      = {{ $nodepool.NodePool.StorageDiskSize }}
   format    = "xfs"
@@ -58,7 +58,7 @@ resource "hcloud_volume" "{{ $node.Name }}_{{ $specName }}_volume" {
 }
 
 resource "hcloud_volume_attachment" "{{ $node.Name }}_{{ $specName }}_volume_att" {
-  provider  = hcloud.nodepool_{{ $specName }}_${var.provider_version}
+  provider  = hcloud.nodepool_{{ $specName }}_v0.1.2
   volume_id = hcloud_volume.{{ $node.Name }}_{{ $specName }}_volume.id
   server_id = hcloud_server.{{ $node.Name }}_{{ $specName }}.id
   automount = false
