@@ -1,4 +1,4 @@
 provider "hcloud" {
   token = "{{ $.Provider.Credentials }}"
-  alias = "nodepool_{{ $.Provider.SpecName }}_v012"
+  alias = "nodepool_{{ $.Provider.SpecName }}_v013"
 }
