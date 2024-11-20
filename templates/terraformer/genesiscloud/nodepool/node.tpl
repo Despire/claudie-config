@@ -66,20 +66,9 @@ resource "genesiscloud_ssh_key" "{{ $sshKeyResourceName }}" {
                 startup_script = <<EOF
 #!/bin/bash
 set -eo pipefail
-sudo sed -i -n 's/^.*ssh-rsa/ssh-rsa/p' /root/.ssh/authorized_keys
-echo 'PermitRootLogin without-password' >> /etc/ssh/sshd_config && echo 'PubkeyAuthentication yes' >> /etc/ssh/sshd_config && service sshd restart
-EOF
-              }
-          {{- end }}
-
-          {{- if $isKubernetesCluster }}
-              metadata = {
-                startup_script = <<EOF
-#!/bin/bash
-set -eo pipefail
 
 mkdir -p /opt/claudie/data
-
+            {{- if $isWorkerNodeWithDiskAttached }}
 sleep 30
 
 # it seems to be not possible to reference volume.id in the startupscript, thus the following hacky way of determining the volume id.
@@ -103,11 +92,10 @@ if ! grep -qs "/dev/$disk" /proc/mounts; then
   mount /dev/$disk /opt/claudie/data
   echo "/dev/$disk /opt/claudie/data xfs defaults 0 0" >> /etc/fstab
 fi
-
+            {{- end }}
 # Allow ssh as root
 sudo sed -i -n 's/^.*ssh-rsa/ssh-rsa/p' /root/.ssh/authorized_keys
 echo 'PermitRootLogin without-password' >> /etc/ssh/sshd_config && echo 'PubkeyAuthentication yes' >> /etc/ssh/sshd_config && service sshd restart
-            {{- end }}
 EOF
           }
           {{- end }}
