@@ -44,10 +44,8 @@ resource "genesiscloud_ssh_key" "{{ $sshKeyResourceName }}" {
           name   = "{{ $node.Name }}"
           region = "{{ $region }}"
 
-          image_id = data.genesiscloud_images.base_os_{{ $resourceSuffix }}.images[index(data.genesiscloud_images.base_os_{{ $resourceSuffix }}.images.*.name, "{{ $nodepool.Details.Image}}")].id
+          image    = replace(lower("{{ $nodepool.Details.Image }}"), " ", "-")
           type     = "{{ $nodepool.Details.ServerType }}"
-
-          public_ip_type = "static"
 
         {{- if and ($isKubernetesCluster) ($isWorkerNodeWithDiskAttached) }}
           volume_ids = [
