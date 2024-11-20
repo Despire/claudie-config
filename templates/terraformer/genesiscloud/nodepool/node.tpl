@@ -80,6 +80,8 @@ set -eo pipefail
 
 mkdir -p /opt/claudie/data
 
+sleep 30
+
 # it seems to be not possible to reference volume.id in the startupscript, thus the following hacky way of determining the volume id.
 for id in $(ls /dev/disk/by-id); do
     device=$(readlink "/dev/disk/by-id/$id")
