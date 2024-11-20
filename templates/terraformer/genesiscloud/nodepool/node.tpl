@@ -66,6 +66,17 @@ resource "genesiscloud_ssh_key" "{{ $sshKeyResourceName }}" {
                 startup_script = <<EOF
 #!/bin/bash
 set -eo pipefail
+sudo sed -i -n 's/^.*ssh-rsa/ssh-rsa/p' /root/.ssh/authorized_keys
+echo 'PermitRootLogin without-password' >> /etc/ssh/sshd_config && echo 'PubkeyAuthentication yes' >> /etc/ssh/sshd_config && service sshd restart
+EOF
+              }
+          {{- end }}
+
+          {{- if $isKubernetesCluster }}
+              metadata = {
+                startup_script = <<EOF
+#!/bin/bash
+set -eo pipefail
 
 mkdir -p /opt/claudie/data
             {{- if $isWorkerNodeWithDiskAttached }}
@@ -97,7 +108,7 @@ fi
 sudo sed -i -n 's/^.*ssh-rsa/ssh-rsa/p' /root/.ssh/authorized_keys
 echo 'PermitRootLogin without-password' >> /etc/ssh/sshd_config && echo 'PubkeyAuthentication yes' >> /etc/ssh/sshd_config && service sshd restart
 EOF
-          }
+              }
           {{- end }}
         }
     {{- end }}
