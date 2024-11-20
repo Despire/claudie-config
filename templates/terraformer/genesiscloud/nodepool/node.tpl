@@ -78,23 +78,21 @@ EOF
 #!/bin/bash
 set -eo pipefail
 
-# Allow ssh as root
-sudo sed -i -n 's/^.*ssh-rsa/ssh-rsa/p' /root/.ssh/authorized_keys
-echo 'PermitRootLogin without-password' >> /etc/ssh/sshd_config && echo 'PubkeyAuthentication yes' >> /etc/ssh/sshd_config && service sshd restart
-
-# startup script
 mkdir -p /opt/claudie/data
-            {{- if $isWorkerNodeWithDiskAttached }}
-sleep 30
-# The IDs listed by `/dev/disk/by-id` are different then the volume ids assigned by genesis cloud.
-# This is a hacky way assuming that only the longhorn volume will be mounted at startup and no other volume
-longhorn_diskuuid=$(echo ${genesiscloud_volume.{{ $volumeResourceName }}.id} | awk -F'-' '{print $1}')
-disk=$(ls -l /dev/disk/by-id | grep "$longhorn_diskuuid" | awk '{print $NF}')
-disk=$(basename "$disk")
 
+# it seems to be not possible to reference volume.id in the startupscript, thus the following hacky way of determining the volume id.
+for id in $(ls /dev/disk/by-id); do
+    device=$(readlink "/dev/disk/by-id/$id")
+    device=$(basename $device)
+    if ! blkid | grep -q "$device"; then
+        disk=$device
+        break;
+    fi;
+done
 
-# The volume is automatically mounted, since we want it for longhorn specifically we have to re-mount the volume under /opt/claudie/data.
-umount -l /dev/$disk
+if [ -z "$disk" ]; then
+    exit 1
+fi
 
 if ! grep -qs "/dev/$disk" /proc/mounts; then
   if ! blkid /dev/$disk | grep -q "TYPE=\"xfs\""; then
@@ -103,6 +101,10 @@ if ! grep -qs "/dev/$disk" /proc/mounts; then
   mount /dev/$disk /opt/claudie/data
   echo "/dev/$disk /opt/claudie/data xfs defaults 0 0" >> /etc/fstab
 fi
+
+# Allow ssh as root
+sudo sed -i -n 's/^.*ssh-rsa/ssh-rsa/p' /root/.ssh/authorized_keys
+echo 'PermitRootLogin without-password' >> /etc/ssh/sshd_config && echo 'PubkeyAuthentication yes' >> /etc/ssh/sshd_config && service sshd restart
             {{- end }}
 EOF
           }
