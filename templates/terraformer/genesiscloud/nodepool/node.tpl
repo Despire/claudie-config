@@ -88,9 +88,10 @@ mkdir -p /opt/claudie/data
 sleep 30
 # The IDs listed by `/dev/disk/by-id` are different then the volume ids assigned by genesis cloud.
 # This is a hacky way assuming that only the longhorn volume will be mounted at startup and no other volume
-longhorn_diskuuid=$(blkid | grep genesis_cloud | grep -oP 'UUID="\K[^"]+')
-disk=$(ls -l /dev/disk/by-uuid/ | grep $longhorn_diskuuid | awk '{print $NF}')
+longhorn_diskuuid=$(echo ${genesiscloud_volume.{{ $volumeResourceName }}.id} | awk -F'-' '{print $1}')
+disk=$(ls -l /dev/disk/by-id | grep "$longhorn_diskuuid" | awk '{print $NF}')
 disk=$(basename "$disk")
+
 
 # The volume is automatically mounted, since we want it for longhorn specifically we have to re-mount the volume under /opt/claudie/data.
 umount -l /dev/$disk
