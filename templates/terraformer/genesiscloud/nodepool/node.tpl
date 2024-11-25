@@ -53,6 +53,7 @@ resource "genesiscloud_ssh_key" "{{ $sshKeyResourceName }}" {
           name   = "{{ $node.Name }}"
           region = "{{ $region }}"
 
+          floating_ip_id = genesiscloud_floating_ip.{{ $floatingIPResourceName }}.id
           image    = replace(lower("{{ $nodepool.Details.Image }}"), " ", "-")
           type     = "{{ $nodepool.Details.ServerType }}"
 
