@@ -27,6 +27,8 @@ resource "genesiscloud_ssh_key" "{{ $sshKeyResourceName }}" {
         {{- $volumeName                   := printf "%sd" $node.Name }}
         {{- $isWorkerNodeWithDiskAttached := and (not $nodepool.IsControl) (gt $nodepool.Details.StorageDiskSize 0) }}
         {{- $instanceResourceName         := printf "%s_%s" $node.Name $resourceSuffix }}
+        {{- $floatingIPResourceName       := printf "%s_%s_ip" $node.Name $resourceSuffix }}
+        {{- $floatingIPName               := printf "%sip" $node.Name }}
         {{- $securityGroupResourceName    := printf "claudie_security_group_%s" $resourceSuffix }}
 
         {{- if and ($isKubernetesCluster) ($isWorkerNodeWithDiskAttached) }}
@@ -38,6 +40,13 @@ resource "genesiscloud_ssh_key" "{{ $sshKeyResourceName }}" {
               type   = "hdd"
             }
         {{- end }}
+
+        resource "genesiscloud_floating_ip" "{{ $floatingIPResourceName }}" {
+            provider = genesiscloud.nodepool_{{ $resourceSuffix }}
+            name = "{{ $floatingIPName }}"
+            region = "{{ $region }}"
+            version = "ipv4"
+        }
 
         resource "genesiscloud_instance" "{{ $instanceResourceName }}" {
           provider = genesiscloud.nodepool_{{ $resourceSuffix }}
