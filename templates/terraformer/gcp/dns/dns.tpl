@@ -46,13 +46,13 @@ resource "google_dns_record_set" "record_{{ $alternativeName }}_{{ $resourceSuff
   managed_zone = data.google_dns_managed_zone.gcp_zone_{{ $resourceSuffix }}.name
 
   rrdatas = [
-      {{- range $ip := .Data.RecordData.IP }}
+      {{- range $ip := $.Data.RecordData.IP }}
           "{{ $ip.V4 }}",
       {{- end }}
     ]
 
 }
 output "{{ $clusterID }}_{{ $alternativeName }}_{{ $specName }}_{{ $uniqueFingerPrint }}" {
-  value = { "{{.Data.ClusterName}}-{{.Data.ClusterHash}}-{{ $alternativeName }}-endpoint" = google_dns_record_set.record_{{ $alternativeName }}_{{ $resourceSuffix }}.name }
+  value = { "{{$.Data.ClusterName}}-{{$.Data.ClusterHash}}-{{ $alternativeName }}-endpoint" = google_dns_record_set.record_{{ $alternativeName }}_{{ $resourceSuffix }}.name }
 }
 {{- end }}
