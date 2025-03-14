@@ -34,25 +34,3 @@ resource "google_dns_record_set" "record_{{ $resourceSuffix }}" {
 output "{{ $clusterID }}_{{ $specName }}_{{ $uniqueFingerPrint }}" {
   value = { "{{.Data.ClusterName}}-{{.Data.ClusterHash}}-endpoint" = google_dns_record_set.record_{{ $resourceSuffix }}.name }
 }
-
-{{- range $_, $alternativeName := .Data.AlternativeNames }}
-resource "google_dns_record_set" "record_{{ $alternativeName }}_{{ $resourceSuffix }}" {
-  provider = google.dns_gcp_{{ $resourceSuffix }}
-
-  name = "{{ $alternativeName }}.${data.google_dns_managed_zone.gcp_zone_{{ $resourceSuffix }}.dns_name}"
-  type = "A"
-  ttl  = 300
-
-  managed_zone = data.google_dns_managed_zone.gcp_zone_{{ $resourceSuffix }}.name
-
-  rrdatas = [
-      {{- range $ip := $.Data.RecordData.IP }}
-          "{{ $ip.V4 }}",
-      {{- end }}
-    ]
-
-}
-output "{{ $clusterID }}_{{ $alternativeName }}_{{ $specName }}_{{ $uniqueFingerPrint }}" {
-  value = { "{{$.Data.ClusterName}}-{{$.Data.ClusterHash}}-{{ $alternativeName }}-endpoint" = google_dns_record_set.record_{{ $alternativeName }}_{{ $resourceSuffix }}.name }
-}
-{{- end }}
