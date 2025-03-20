@@ -6,7 +6,7 @@
 {{- if hasExtension .Data "AlternativeNamesExtension" }}
 	{{- range $_, $alternativeName := .Data.AlternativeNamesExtension.Names }}
 
-        {{- range $ip := .Data.RecordData.IP }}
+        {{- range $ip := $.Data.RecordData.IP }}
             {{- $escapedIPv4 := replaceAll $ip.V4 "." "_" }}
             {{- $recordResourceName := printf "record_%s_%s_%s" $alternativeName $escapedIPv4 $resourceSuffix }}
 
