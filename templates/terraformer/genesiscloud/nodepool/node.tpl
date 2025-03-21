@@ -77,7 +77,19 @@ resource "genesiscloud_ssh_key" "{{ $sshKeyResourceName }}" {
 #!/bin/bash
 set -eo pipefail
 sudo sed -i -n 's/^.*ssh-rsa/ssh-rsa/p' /root/.ssh/authorized_keys
-echo 'PermitRootLogin without-password' >> /etc/ssh/sshd_config && echo 'PubkeyAuthentication yes' >> /etc/ssh/sshd_config && service sshd restart
+echo 'PermitRootLogin without-password' >> /etc/ssh/sshd_config && echo 'PubkeyAuthentication yes' >> /etc/ssh/sshd_config
+
+# The '|| true' part in the following cmd makes sure that this script doesn't fail when there is no sshd service.
+sshd_active=$(systemctl is-active sshd 2>/dev/null || true)
+ssh_active=$(systemctl is-active ssh 2>/dev/null || true)
+
+if [ $sshd_active = 'active' ]; then
+    systemctl restart sshd
+fi
+
+if [ $ssh_active = 'active' ]; then
+    systemctl restart ssh
+fi
 EOF
               }
           {{- end }}
@@ -87,6 +99,22 @@ EOF
                 startup_script = <<EOF
 #!/bin/bash
 set -eo pipefail
+
+# Allow ssh as root
+sudo sed -i -n 's/^.*ssh-rsa/ssh-rsa/p' /root/.ssh/authorized_keys
+echo 'PermitRootLogin without-password' >> /etc/ssh/sshd_config && echo 'PubkeyAuthentication yes' >> /etc/ssh/sshd_config
+
+# The '|| true' part in the following cmd makes sure that this script doesn't fail when there is no sshd service.
+sshd_active=$(systemctl is-active sshd 2>/dev/null || true)
+ssh_active=$(systemctl is-active ssh 2>/dev/null || true)
+
+if [ $sshd_active = 'active' ]; then
+    systemctl restart sshd
+fi
+
+if [ $ssh_active = 'active' ]; then
+    systemctl restart ssh
+fi
 
 mkdir -p /opt/claudie/data
             {{- if $isWorkerNodeWithDiskAttached }}
@@ -114,9 +142,6 @@ if ! grep -qs "/dev/$disk" /proc/mounts; then
   echo "/dev/$disk /opt/claudie/data xfs defaults 0 0" >> /etc/fstab
 fi
             {{- end }}
-# Allow ssh as root
-sudo sed -i -n 's/^.*ssh-rsa/ssh-rsa/p' /root/.ssh/authorized_keys
-echo 'PermitRootLogin without-password' >> /etc/ssh/sshd_config && echo 'PubkeyAuthentication yes' >> /etc/ssh/sshd_config && service sshd restart
 EOF
               }
           {{- end }}
