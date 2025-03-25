@@ -5,9 +5,9 @@
 
 {{- if hasExtension .Data "AlternativeNamesExtension" }}
 	{{- range $_, $alternativeName := .Data.AlternativeNamesExtension.Names }}
+	{{- $escapedAlternativeName    := replaceAll $alternativeName "." "_" }}
 
 
-	{{- $escapedAlternativeName := replaceAll $alternativeName "." "_" }}
 	resource "aws_route53_record" "record_{{ $escapedAlternativeName }}_{{ $resourceSuffix }}" {
         provider    = aws.dns_aws_{{ $resourceSuffix }}
         zone_id     = "${data.aws_route53_zone.aws_zone_{{ $resourceSuffix }}.zone_id }"
@@ -21,7 +21,7 @@
         ]
 	}
 
-	output "{{ $clusterID }}_{{ $alternativeName }}_{{ $resourceSuffix }}" {
+	output "{{ $clusterID }}_{{ $escapedAlternativeName }}_{{ $resourceSuffix }}" {
 	  value = { "{{ $clusterID }}-{{ $alternativeName }}-endpoint" = aws_route53_record.record_{{ $alternativeName }}_{{ $resourceSuffix }}.name }
 	}
 
