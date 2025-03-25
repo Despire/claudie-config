@@ -5,8 +5,10 @@
 
 {{- if hasExtension .Data "AlternativeNamesExtension" }}
 	{{- range $_, $alternativeName := .Data.AlternativeNamesExtension.Names }}
+	{{- $escapedAlternativeName    := replaceAll $alternativeName "." "_" }}
 
-	resource "google_dns_record_set" "record_{{ $alternativeName }}_{{ $resourceSuffix }}" {
+
+	resource "google_dns_record_set" "record_{{ $escapedAlternativeName }}_{{ $resourceSuffix }}" {
 	  provider = google.dns_gcp_{{ $resourceSuffix }}
 
 	  name = "{{ $alternativeName }}.${data.google_dns_managed_zone.gcp_zone_{{ $resourceSuffix }}.dns_name}"
@@ -23,7 +25,7 @@
 
 	}
 
-	output "{{ $clusterID }}_{{ $alternativeName }}_{{ $resourceSuffix }}" {
+	output "{{ $clusterID }}_{{ $escapedAlternativeName }}_{{ $resourceSuffix }}" {
 	  value = { "{{ $clusterID }}-{{ $alternativeName }}-endpoint" = google_dns_record_set.record_{{ $alternativeName }}_{{ $resourceSuffix }}.name }
 	}
 

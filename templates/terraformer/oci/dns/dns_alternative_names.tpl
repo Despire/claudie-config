@@ -5,8 +5,10 @@
 
 {{- if hasExtension .Data "AlternativeNamesExtension" }}
 	{{- range $_, $alternativeName := .Data.AlternativeNamesExtension.Names }}
+	{{- $escapedAlternativeName    := replaceAll $alternativeName "." "_" }}
 
-	resource "oci_dns_rrset" "record_{{ $alternativeName }}_{{ $resourceSuffix }}" {
+
+	resource "oci_dns_rrset" "record_{{ $escapedAlternativeName }}_{{ $resourceSuffix }}" {
 	   provider        = oci.dns_oci_{{ $resourceSuffix }}
 	   domain          = "{{ $alternativeName }}.${data.oci_dns_zones.oci_zone_{{ $resourceSuffix }}.name}"
 	   rtype           = "A"
@@ -24,7 +26,7 @@
 	}
 
 
-	output "{{ $clusterID }}_{{ $alternativeName }}_{{ $resourceSuffix }}" {
+	output "{{ $clusterID }}_{{ $escapedAlternativeName }}_{{ $resourceSuffix }}" {
 	  value = { "{{ $clusterID }}-{{ $alternativeName }}-endpoint" = oci_dns_rrset.record_{{ $alternativeName }}_{{ $resourceSuffix }}.domain }
 	}
 

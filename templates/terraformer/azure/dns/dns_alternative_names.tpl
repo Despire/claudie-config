@@ -5,8 +5,10 @@
 
 {{- if hasExtension .Data "AlternativeNamesExtension" }}
 	{{- range $_, $alternativeName := .Data.AlternativeNamesExtension.Names }}
+	{{- $escapedAlternativeName    := replaceAll $alternativeName "." "_" }}
 
-	resource "azurerm_dns_a_record" "record_{{ $alternativeName }}_{{ $resourceSuffix }}" {
+
+	resource "azurerm_dns_a_record" "record_{{ $escapedAlternativeName }}_{{ $resourceSuffix }}" {
 	   provider            = azurerm.dns_azure_{{ $resourceSuffix }}
 	   name                = "{{ $alternativeName }}"
 	   zone_name           = data.azurerm_dns_zone.azure_zone_{{ $resourceSuffix }}.name
@@ -19,7 +21,7 @@
 	   ]
 	}
 
-	output "{{ $clusterID }}_{{ $alternativeName }}_{{ $resourceSuffix }}" {
+	output "{{ $clusterID }}_{{ $escapedAlternativeName }}_{{ $resourceSuffix }}" {
 	  value = { "{{ $clusterID }}-{{ $alternativeName }}-endpoint" = format("%s.%s", azurerm_dns_a_record.record_{{ $alternativeName }}_{{ $resourceSuffix }}.name, azurerm_dns_a_record.record_{{ $alternativeName }}_{{ $resourceSuffix}}.zone_name )}
 	}
 
