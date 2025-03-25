@@ -26,7 +26,7 @@
 	}
 
 	output "{{ $clusterID }}_{{ $escapedAlternativeName }}_{{ $resourceSuffix }}" {
-	  value = { "{{ $clusterID }}-{{ $alternativeName }}-endpoint" = google_dns_record_set.record_{{ $alternativeName }}_{{ $resourceSuffix }}.name }
+	  value = { "{{ $clusterID }}-{{ $alternativeName }}-endpoint" = google_dns_record_set.record_{{ $escapedAlternativeName }}_{{ $resourceSuffix }}.name }
 	}
 
 	{{- end }}

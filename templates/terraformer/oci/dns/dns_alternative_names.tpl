@@ -27,7 +27,7 @@
 
 
 	output "{{ $clusterID }}_{{ $escapedAlternativeName }}_{{ $resourceSuffix }}" {
-	  value = { "{{ $clusterID }}-{{ $alternativeName }}-endpoint" = oci_dns_rrset.record_{{ $alternativeName }}_{{ $resourceSuffix }}.domain }
+	  value = { "{{ $clusterID }}-{{ $alternativeName }}-endpoint" = oci_dns_rrset.record_{{ $escapedAlternativeName }}_{{ $resourceSuffix }}.domain }
 	}
 
 	{{- end }}

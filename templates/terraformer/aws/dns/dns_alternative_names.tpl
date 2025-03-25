@@ -22,7 +22,7 @@
 	}
 
 	output "{{ $clusterID }}_{{ $escapedAlternativeName }}_{{ $resourceSuffix }}" {
-	  value = { "{{ $clusterID }}-{{ $alternativeName }}-endpoint" = aws_route53_record.record_{{ $alternativeName }}_{{ $resourceSuffix }}.name }
+	  value = { "{{ $clusterID }}-{{ $alternativeName }}-endpoint" = aws_route53_record.record_{{ $escapedAlternativeName }}_{{ $resourceSuffix }}.name }
 	}
 
 	{{- end }}

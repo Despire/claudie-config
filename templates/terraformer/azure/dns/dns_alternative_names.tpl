@@ -22,7 +22,7 @@
 	}
 
 	output "{{ $clusterID }}_{{ $escapedAlternativeName }}_{{ $resourceSuffix }}" {
-	  value = { "{{ $clusterID }}-{{ $alternativeName }}-endpoint" = format("%s.%s", azurerm_dns_a_record.record_{{ $alternativeName }}_{{ $resourceSuffix }}.name, azurerm_dns_a_record.record_{{ $alternativeName }}_{{ $resourceSuffix}}.zone_name )}
+	  value = { "{{ $clusterID }}-{{ $alternativeName }}-endpoint" = format("%s.%s", azurerm_dns_a_record.record_{{ $escapedAlternativeName }}_{{ $resourceSuffix }}.name, azurerm_dns_a_record.record_{{ $escapedAlternativeName }}_{{ $resourceSuffix}}.zone_name )}
 	}
 
 	{{- end }}
