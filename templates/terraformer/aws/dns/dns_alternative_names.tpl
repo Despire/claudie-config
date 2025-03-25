@@ -5,11 +5,13 @@
 
 {{- if hasExtension .Data "AlternativeNamesExtension" }}
 	{{- range $_, $alternativeName := .Data.AlternativeNamesExtension.Names }}
+	{{- $escapedAlternativeName := replaceAll $alternativeName "." "_" }}
 
-	resource "aws_route53_record" "record_{{ $alternativeName }}_{{ $resourceSuffix }}" {
+
+	resource "aws_route53_record" "record_{{ $escapedAlternativeName }}_{{ $resourceSuffix }}" {
         provider    = aws.dns_aws_{{ $resourceSuffix }}
         zone_id     = "${data.aws_route53_zone.aws_zone_{{ $resourceSuffix }}.zone_id }"
-        name        = "{{ $alternativeName }}.${data.aws_route53_zone.aws_zone_{{ $resourceSuffix }}.name}"
+        name        = "{{ $escapedAlternativeName }}.${data.aws_route53_zone.aws_zone_{{ $resourceSuffix }}.name}"
         type        = "A"
         ttl         = 300
         records     = [
